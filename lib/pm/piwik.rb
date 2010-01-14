@@ -71,6 +71,38 @@ module PM
 
       return Piwik
     end
+
+    module TestHelpers
+      def assert_piwik_analytics
+        # Assert that the JS inclusion tag is defined, and it is positioned
+        # before the inline js tag containing the .getTracker on the correct
+        # host name and ID.
+        #
+        assert_tag :tag => 'script',
+          :attributes => {
+            :src  => 'http://test.host/piwik/piwik.js',
+            :type => 'text/javascript'
+          },
+          :before => {
+            :tag     => 'script',
+            :content => /Piwik\.getTracker \('http:\/\/test\.host\/piwik\/piwik\.php', 420\)/
+          }
+
+        # Assert that the noscript tag with the descendant img tag is defined
+        # on the correct host name and ID.
+        #
+        assert_tag :tag => 'noscript',
+          :descendant => {
+            :tag => 'img',
+            :attributes => {
+              :src => 'http://test.host/piwik/piwik.php?idsite=420',
+              :style => 'border:0',
+              :alt => ''
+            }
+          }
+      end
+    end
+
   end
 end
 
