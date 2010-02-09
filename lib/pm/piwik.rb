@@ -22,7 +22,7 @@ module PM
       #     :i_really_want_to_disable_analytics: true
       #
       raise ArgumentError, 'Analytics configuration missing' if Config.blank?
-    elsif Rails.env.test?
+    elsif Rails.env.test? || Rails.env == 'cucumber'
       Config = {:url => 'http://test.host/piwik', :id => 420}
     end
 
