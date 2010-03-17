@@ -59,7 +59,6 @@ module PM
               var piwikTracker = Piwik.getTracker ('#{piwik_php}', #{piwik_id});
 
               piwikTracker.trackPageView ();
-              piwikTracker.enableLinkTracking ();
             } catch (err) {
               $.log ('Error while initializing analytics: ' + err);
             }
