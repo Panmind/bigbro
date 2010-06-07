@@ -48,7 +48,7 @@ module PM
     end
 
     Piwik = ''
-    def piwik_analytics_tags
+    def piwik_analytics_tags(track = true)
       return if piwik_disabled?
 
       if Piwik.blank?
@@ -58,7 +58,7 @@ module PM
             try {
               var piwikTracker = Piwik.getTracker ('#{piwik_php}', #{piwik_id});
 
-              piwikTracker.trackPageView ();
+              #{track ? 'piwikTracker.trackPageView ();' : ''}
             } catch (err) {
               $.log ('Error while initializing analytics: ' + err);
             }
