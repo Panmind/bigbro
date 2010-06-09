@@ -47,28 +47,22 @@ module PM
       Rails.env.development? || Config[:i_really_want_to_disable_analytics]
     end
 
-    Piwik = ''
+    @@piwik = nil
     def piwik_analytics_tags(track = true)
       return if piwik_disabled?
-
-      if Piwik.blank?
-        Piwik.replace(
-          javascript_include_tag(piwik_js) +
-          javascript_tag(%(
-            try {
-              var piwikTracker = Piwik.getTracker ('#{piwik_php}', #{piwik_id});
-
-              #{track ? 'piwikTracker.trackPageView ();' : ''}
-            } catch (err) {
-              $.log ('Error while initializing analytics: ' + err);
-            }
-          )) +
-          content_tag(:noscript, image_tag("#{piwik_php}?idsite=#{piwik_id}",
-                                           :style => 'border:0', :alt => ''))
-        )
-      end
-
-      return Piwik
+      @@piwik ||= begin
+        javascript_include_tag(piwik_js) +
+        javascript_tag(%(
+          try {
+            var piwikTracker = Piwik.getTracker ('#{piwik_php}', #{piwik_id});
+            #{track ? 'piwikTracker.trackPageView ();' : ''}
+          } catch (err) {
+            $.log ('Error while initializing analytics: ' + err);
+          }
+        )) +
+        content_tag(:noscript, image_tag("#{piwik_php}?idsite=#{piwik_id}",
+                                         :style => 'border:0', :alt => ''))
+      end.html_safe
     end
 
     module TestHelpers
