@@ -47,39 +47,53 @@ module PM
       Rails.env.development? || Config[:i_really_want_to_disable_analytics]
     end
 
-    @@piwik = nil
-    def piwik_analytics_tags(track = true)
+    def piwik_analytics(options = {})
       return if piwik_disabled?
-      @@piwik ||= begin
-        javascript_include_tag(piwik_js) +
-        javascript_tag(%(
-          try {
-            var piwikTracker = Piwik.getTracker ('#{piwik_php}', #{piwik_id});
-            #{track ? 'piwikTracker.trackPageView ();' : ''}
-          } catch (err) {
-            $.log ('Error while initializing analytics: ' + err);
-          }
-        )) +
-        content_tag(:noscript, image_tag("#{piwik_php}?idsite=#{piwik_id}",
-                                         :style => 'border:0', :alt => ''))
-      end.html_safe
+      track = options.has_key?(:track) ? options[:track] : true
+      embed = options.has_key?(:embed) ? options[:embed] : true
+
+      html = ''
+      html.concat(javascript_include_tag(piwik_js)) if embed
+      html.concat(javascript_tag(%(
+        try {
+          var piwikTracker = Piwik.getTracker ('#{piwik_php}', #{piwik_id});
+          #{track ? 'piwikTracker.trackPageView ();' : ''}
+        } catch (err) {
+          $.log ('Error while initializing analytics: ' + err);
+        }
+      )))
+
+      html.concat(content_tag(:noscript,
+        image_tag("#{piwik_php}?idsite=#{piwik_id}",
+                  :style => 'border:0', :alt => '').html_safe
+      ))
+
+      return html.html_safe
     end
 
     module TestHelpers
-      def assert_piwik_analytics
-        # Assert that the JS inclusion tag is defined, and it is positioned
-        # before the inline js tag containing the .getTracker on the correct
-        # host name and ID.
-        #
-        assert_tag :tag => 'script',
-          :attributes => {
+      Tracker = /Piwik\.getTracker \('http:\/\/test\.host\/piwik\/piwik\.php', 420\)/
+
+      def assert_piwik_analytics(options = {})
+        embed = options.has_key?(:embed) ? options[:embed] : true
+
+        if embed
+          # Assert that the JS inclusion tag is defined, and it is positioned
+          # before the inline js tag containing the .getTracker on the correct
+          # host name and ID.
+          #
+          assert_tag :tag => 'script',
+            :attributes => {
             :src  => 'http://test.host/piwik/piwik.js',
             :type => 'text/javascript'
           },
-          :before => {
+            :before => {
             :tag     => 'script',
-            :content => /Piwik\.getTracker \('http:\/\/test\.host\/piwik\/piwik\.php', 420\)/
+            :content => Tracker
           }
+        else
+          assert_tag :tag => 'script', :content => Tracker
+        end
 
         # Assert that the noscript tag with the descendant img tag is defined
         # on the correct host name and ID.
