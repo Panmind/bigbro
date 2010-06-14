@@ -32,8 +32,8 @@ module PM
         track = options.has_key?(:track) ? options[:track] : true
 
         ga_host = Analytics.host_for(request)
-        ga_cmds = [['setAccount', Analytics.account]]
-        ga_cmds.push(['trackPageView']) if track
+        ga_cmds = [['_setAccount', Analytics.account]]
+        ga_cmds.push(['_trackPageView']) if track
 
         code = ''
         code.concat javascript_tag(%(
