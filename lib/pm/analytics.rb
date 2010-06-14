@@ -33,7 +33,7 @@ module PM
 
         ga_host = Analytics.host_for(request)
         ga_cmds = [['_setAccount', Analytics.account]]
-        ga_cmds.push(['_trackPageView']) if track
+        ga_cmds.push(['_trackPageview']) if track
 
         code = ''
         code.concat javascript_tag(%(
