@@ -1,5 +1,5 @@
-module PM
-  module Analytics
+module Panmind
+  module BigBro
     module Helpers
       # Embeds the optimized Analytics code and the noscript tag with
       # the direct path to the __utm.gif image into the current page.
@@ -9,12 +9,12 @@ module PM
       # the JS API.
       #
       def analytics(options = {})
-        return if Analytics.disabled?
+        return if BigBro.disabled?
 
         track = options.has_key?(:track) ? options[:track] : true
 
-        ga_host = Analytics.host_for(request)
-        ga_cmds = [['_setAccount', Analytics.account]]
+        ga_host = BigBro.host_for(request)
+        ga_cmds = [['_setAccount', BigBro.account]]
         ga_cmds.push(['_trackPageview']) if track
 
         code = ''
@@ -31,7 +31,7 @@ module PM
         ))
 
         code.concat(content_tag(:noscript,
-          image_tag(Analytics.noscript_image_path_for(request, ga_host),
+          image_tag(BigBro.noscript_image_path_for(request, ga_host),
                     :border => '0', :alt => '').html_safe
         ))
 
@@ -56,11 +56,11 @@ module PM
       #
       # Sets the 'UA-12345-67' account:
       #
-      #   PM::Analytics.set(:account => 'UA-12345-67')
+      #   Panmind::BigBro.set(:account => 'UA-12345-67')
       #
       # Disables analytics code generation:
       #
-      #   PM::Analytics.set(:disabled => true)
+      #   Panmind::BigBro.set(:disabled => true)
       #
       def set(options = {})
         self.account  = options[:account]
@@ -68,7 +68,7 @@ module PM
 
         if Rails.env.production?
           if self.account.blank? && !self.disabled
-            raise ArgumentError, 'Analytics configuration missing'
+            raise ArgumentError, 'BigBro: analytics configuration missing'
           end
         elsif Rails.env.test?
           self.account = 'UA-420-THEBRAIN'
@@ -78,8 +78,11 @@ module PM
       # In development mode the Analytics code is always disabled,
       # or it can be disabled manually via the configuration.
       #
+      # If no account is set, the code disables itself. Maybe the
+      # check in the set() method should be moved here, we'll see.
+      #
       def disabled?
-        Rails.env.development? || self.disabled
+        self.disabled || self.account.blank? || Rails.env.development?
       end
 
       # Returns the analytics host for the given request (SSL or not)
@@ -129,7 +132,7 @@ module PM
       # Asserts the noscript tag with the descendant img.
       #
       def assert_analytics
-        host = Analytics.host_for(@request)
+        host = BigBro.host_for(@request)
 
         assert_tag :tag => 'script', :content => /#{host}\/ga.js/
 
@@ -144,9 +147,5 @@ module PM
           }
       end
     end
-
   end
 end
-
-ActionView::Base.instance_eval { include PM::Analytics::Helpers }
-ActiveSupport::TestCase.instance_eval { include PM::Analytics::TestHelpers } if Rails.env.test?
