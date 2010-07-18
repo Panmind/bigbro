@@ -1,31 +1,13 @@
 module PM
   module Analytics
-    if Rails.env.production?
-      Config = APPLICATION_CONFIG[:analytics]
-
-      # *Enforce* analytics configuration in production mode
-      #
-      # If you're developing and want to run your local copy
-      # in production mode, you can either add dumb settings
-      # in your settings.yml, to check how the GAnal JS code
-      # is being generated:
-      #
-      #   :analytics:
-      #     :id:  "UA-31337-00"
-      #
-      # Or, if you're really not interested at all in any of
-      # the Analytics bells and whistles, you can boldly disable
-      # it via the following configuration:
-      #
-      #   :analytics:
-      #     :i_really_want_to_disable_analytics: true
-      #
-      raise ArgumentError, 'Analytics configuration missing' if Config.blank?
-    elsif Rails.env.test?
-      Config = {:id => 'UA-420-THEBRAIN'}
-    end
-
     module Helpers
+      # Embeds the optimized Analytics code and the noscript tag with
+      # the direct path to the __utm.gif image into the current page.
+      #
+      # If the `:track` option is set to false, the current page load
+      # is *not* automatically tracked: you should track it later via
+      # the JS API.
+      #
       def analytics(options = {})
         return if Analytics.disabled?
 
@@ -58,18 +40,56 @@ module PM
     end
 
     class << self
-      def account
-        Config[:id]
+      attr_accessor :account
+      attr_accessor :disabled
+
+      # Sets the Analytics account and *enforces* it to be set
+      # in production mode.
+      #
+      # If you're developing and want to run your local copy
+      # in production mode, you can either pass an invalid
+      # account (e.g. to check how the JS code is generated)
+      # or pass the :disabled option set to true.
+      #
+      # In test mode, the account is always set to the dummy
+      # "UA-420-THEBRAIN" string.
+      #
+      # Sets the 'UA-12345-67' account:
+      #
+      #   PM::Analytics.set(:account => 'UA-12345-67')
+      #
+      # Disables analytics code generation:
+      #
+      #   PM::Analytics.set(:disabled => true)
+      #
+      def set(options = {})
+        self.account  = options[:account]
+        self.disabled = options[:disabled]
+
+        if Rails.env.production?
+          if self.account.blank? && !self.disabled
+            raise ArgumentError, 'Analytics configuration missing'
+          end
+        elsif Rails.env.test?
+          self.account = 'UA-420-THEBRAIN'
+        end
       end
 
+      # In development mode the Analytics code is always disabled,
+      # or it can be disabled manually via the configuration.
+      #
       def disabled?
-        Rails.env.development? || Config[:i_really_want_to_disable_analytics]
+        Rails.env.development? || self.disabled
       end
 
+      # Returns the analytics host for the given request (SSL or not)
+      #
       def host_for(request)
         (request.ssl? ? 'https://ssl' : 'http://www') + '.google-analytics.com'
       end
 
+      # Returns the noscript image path for the given request and GA Host
+      #
       def noscript_image_path_for(request, ga_host)
         cookie = rand(   89_999_999) +    10_000_000
         req_no = rand(8_999_999_999) + 1_000_000_000
@@ -105,15 +125,14 @@ module PM
     end
 
     module TestHelpers
+      # Asserts the GA <script> tag, with not much effort;
+      # Asserts the noscript tag with the descendant img.
+      #
       def assert_analytics
         host = Analytics.host_for(@request)
 
-        # Assert the GA <script> tag, with not much effort
-        #
         assert_tag :tag => 'script', :content => /#{host}\/ga.js/
 
-        # Assert the noscript tag with the descendant img
-        #
         assert_tag :tag => 'noscript',
           :descendant => {
             :tag => 'img',
@@ -128,3 +147,6 @@ module PM
 
   end
 end
+
+ActionView::Base.instance_eval { include PM::Analytics::Helpers }
+ActiveSupport::TestCase.instance_eval { include PM::Analytics::TestHelpers } if Rails.env.test?
