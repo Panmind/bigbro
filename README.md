@@ -55,3 +55,9 @@ simple:
       end
     end
 
+
+Compatibility
+-------------
+
+Tested with Rails 2.3.8 with the `rails_xss` plugin installed,
+running under Ruby 1.9.1-p378.
