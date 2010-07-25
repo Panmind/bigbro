@@ -1,3 +1,5 @@
+require 'panmind/bigbro/railtie'
+
 module Panmind
   module BigBro
     Version = 0.8
