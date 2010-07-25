@@ -1,5 +1,7 @@
 module Panmind
   module BigBro
+    Version = 0.8
+
     module Helpers
       # Embeds the optimized Analytics code and the noscript tag with
       # the direct path to the __utm.gif image into the current page.
