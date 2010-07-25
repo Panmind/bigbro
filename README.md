@@ -4,9 +4,13 @@ BigBro: A Google Analytics plugin for Rails
 Installation
 ------------
 
-    script/plugin install git://github.com/Panmind/bigbro.git
+Via RubyGems:
 
-Gems will follow soon, hopefully after the July 22nd Ruby Social Club in Milan.
+    gem install panmind-bigbro
+
+Or via Rails Plugin:
+
+    script/plugin install git://github.com/Panmind/bigbro.git
 
 Usage
 -----
