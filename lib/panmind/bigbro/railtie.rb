@@ -1,3 +1,5 @@
+require 'panmind/bigbro'
+
 module Panmind
   module BigBro
 

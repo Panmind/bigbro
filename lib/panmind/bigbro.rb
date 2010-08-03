@@ -1,8 +1,6 @@
-require 'panmind/bigbro/railtie'
-
 module Panmind
   module BigBro
-    Version = '0.8.1'
+    Version = '0.8.2'
 
     module Helpers
       # Embeds the optimized Analytics code and the noscript tag with
