@@ -17,7 +17,9 @@ module Panmind
 
         ga_host = BigBro.host_for(request)
         ga_cmds = [['_setAccount', BigBro.account]]
-        ga_cmds.push(['_trackPageview']) if track
+        ga_cmds.push ['_setDomainName', BigBro.domain] if BigBro.domain
+        ga_cmds.concat(options[:commands]) if options[:commands]
+        ga_cmds.push ['_trackPageview']    if track
 
         code = ''
         code.concat javascript_tag(%(
@@ -42,8 +44,7 @@ module Panmind
     end
 
     class << self
-      attr_accessor :account
-      attr_accessor :disabled
+      attr_accessor :account, :domain, :disabled
 
       # Sets the Analytics account and *enforces* it to be set
       # in production mode.
@@ -60,13 +61,17 @@ module Panmind
       #
       #   Panmind::BigBro.set(:account => 'UA-12345-67')
       #
+      # Sets the 'UA-12345-67' account and the 'foo.com' domain:
+      #
+      #   Panmind::BigBro.set(:account => 'UA-12345-67', :domain => 'foo.com')
+      #
       # Disables analytics code generation:
       #
       #   Panmind::BigBro.set(:disabled => true)
       #
       def set(options = {})
-        self.account  = options[:account]
-        self.disabled = options[:disabled]
+        self.account, self.disabled, self.domain =
+          options.values_at(:account, :disabled, :domain)
 
         if Rails.env.production?
           if self.account.blank? && !self.disabled
