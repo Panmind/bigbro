@@ -1,6 +1,6 @@
 module Panmind
   module BigBro
-    Version = '0.8.2'
+    Version = '0.8.3'
 
     module Helpers
       # Embeds the optimized Analytics code and the noscript tag with
