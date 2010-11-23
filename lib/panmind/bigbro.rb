@@ -1,6 +1,8 @@
+require 'panmind/bigbro/railtie' if defined? Rails
+
 module Panmind
   module BigBro
-    Version = '0.8.3'
+    Version = '0.9'
 
     module Helpers
       # Embeds the optimized Analytics code and the noscript tag with

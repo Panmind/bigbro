@@ -4,7 +4,6 @@ module Panmind
   module BigBro
 
     if defined? Rails::Railtie
-      require 'rails'
       class Railtie < Rails::Railtie
         initializer 'panmind-bigbro.insert_into_action_view' do
           ActiveSupport.on_load :action_view do

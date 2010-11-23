@@ -23,11 +23,11 @@ begin
     gemspec.has_rdoc         = true
 
     gemspec.version          = Panmind::BigBro::Version
-    gemspec.date             = '2010-07-25'
+    gemspec.date             = '2010-11-23'
 
     gemspec.require_path     = 'lib'
 
-    gemspec.add_dependency('rails', '>= 2.3.8')
+    gemspec.add_dependency('rails', '~> 3.0')
   end
 rescue LoadError
   puts 'Jeweler not available. Install it with: gem install jeweler'
